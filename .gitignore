@@ -1,0 +1,9 @@
+*.log
+/.vagrant
+
+provision/roles/oracledb/files/database/
+provision/roles/oracledb/files/examples
+
+provision/roles/lean_delivery.oracle_db
+
+provision/roles/ariba/files/Upstream-9r2

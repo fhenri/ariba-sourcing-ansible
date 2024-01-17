@@ -1,0 +1,27 @@
+---
+
+- name: Unsure directory exists
+  file: 
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ dba_group }}"
+  with_items:
+    - "{{ oracle_root }}"
+    - "{{ oracle_root }}/db"
+  become: True
+
+- name: Copy ariba sql script
+  template:
+    src: templates/aribadb.sql.j2
+    dest: "{{ oracle_root }}/db/aribadb.sql"
+    mode: 0777
+    owner: "{{ oracle_user }}"
+  become: True
+
+- name: create ariba tablespaces
+  command:
+    chdir: "{{ oracle_root }}/db"
+    cmd: "/bin/sh -c 'source /etc/profile.d/ora.sh && sqlplus system/{{ oracle_password }} @aribadb.sql'"
+  become: yes
+  become_user: "{{ oracle_user }}"

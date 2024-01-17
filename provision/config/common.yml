@@ -1,0 +1,17 @@
+---
+host_db_address:  "192.168.80.51"
+host_app_address: "192.168.80.52"
+
+db_hostname:      "ariba.db"
+
+ariba_user:       "ariba"
+ariba_hostname:   "ariba.app"
+ariba_version:    "9r2"
+ariba_sp:         "sourcing_9.2_sp34.03.jar"
+
+tomcat_version:   "tomcat8"
+tomcat_servers:
+    - node: asmserver1
+      port: 8009
+    - node: asmserver2
+      port: 8019

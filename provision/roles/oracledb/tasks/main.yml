@@ -1,0 +1,21 @@
+---
+# tasks file for oracledb
+
+- block:
+  - name: Install prerequisites packages for oracle installation
+    include_tasks: packages.yml
+
+  - name: setup swap
+    include_tasks: swap.yml
+
+  - name: Do some preparation work
+    include_tasks: setup.yml
+
+  become: yes
+  become_user: root
+
+- name: run oracle installation 
+  include_tasks: install.yml
+
+- name: setup ariba tablespace 
+  include_tasks: ariba.yml

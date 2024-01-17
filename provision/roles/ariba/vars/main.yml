@@ -1,0 +1,21 @@
+---
+# vars file for ariba
+ariba_host: "{{ ariba_hostname }}"
+ariba_root: "/home/{{ ariba_user }}"
+ariba_base: "{{ ariba_root }}/Sourcing"
+ariba_server: "{{ ariba_base }}/Server"
+
+ariba_inst: "{{ ariba_root}}/install_sources"
+ariba_conf: "{{ ariba_inst}}/conf"
+aes_inst_upstream: "{{ ariba_inst}}/Upstream-{{ ariba_version }}"
+
+tomcat_root: "{{ ariba_root }}/{{ tomcat_version }}"
+tomcat_source_folder: files/tomcat
+tomcat_source_file: 
+    "{% if tomcat_version == 'tomcat8' %}\
+      apache-tomcat-8.5.16.tar.gz\
+    {% elif tomcat_version == 'tomcat7' %}\
+      apache-tomcat-7.0.96.tar.gz\
+    {% else %}\
+      'unknown'\
+    {% endif %}"

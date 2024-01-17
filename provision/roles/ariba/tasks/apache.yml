@@ -1,0 +1,18 @@
+---
+# Apache configuration for Ariba
+
+- name: install httpd
+  yum: name=httpd state=installed
+
+- name: Ensure apache starts
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: Copy ariba configuration file
+  template: 
+    src: templates/ariba.conf.tomcat.proxy.j2
+    dest: /etc/httpd/conf.d/ariba.conf
+    mode: 0777
+  notify: restart apache

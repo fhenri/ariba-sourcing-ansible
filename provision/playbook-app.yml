@@ -1,0 +1,15 @@
+- name: configure ariba application server
+  hosts: app
+  become: True
+  vars_files:
+    - config/common.yml
+
+  roles:
+    - role: geerlingguy.java
+      when: "ansible_os_family == 'RedHat'"
+      java_packages:
+        - java-1.8.0-openjdk-devel
+
+    - role: ariba
+
+

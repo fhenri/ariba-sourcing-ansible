@@ -1,0 +1,7 @@
+---
+# copy jrebel if provided
+
+- name: Copy JRebel directory
+  copy:
+    src: files/jrebel
+    dest: "{{ ariba_root}}"

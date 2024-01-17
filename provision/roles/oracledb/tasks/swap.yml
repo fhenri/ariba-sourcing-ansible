@@ -1,0 +1,42 @@
+---
+- name: Check swapfile
+  stat:
+    path: '{{ swapfile_path }}'
+  register: swapfile
+
+- name: Create swapfile section
+  block:
+
+    - name: Create swapfile
+      command: >-
+        dd if=/dev/zero of={{ swapfile_path }}
+        bs={{ swapfile_bs_size_mb }}M
+        count={{ swapfile_count }}
+      args:
+        creates: '{{ swapfile_path }}'
+      when: not swapfile.stat.exists
+
+    - name: Set swapfile permissions
+      file:
+        path: '{{ swapfile_path }}'
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: set up swapfile
+      command: '/sbin/mkswap {{ swapfile_path }}'
+      register: make_swap_result
+      changed_when: make_swap_result.rc == 0
+
+    - name: enable swapfile
+      command: '/sbin/swapon {{ swapfile_path }}'
+      register: swap_on_result
+      changed_when: swap_on_result.rc == 0
+
+    - name: add swapfile entry to fstab
+      lineinfile:
+        dest: /etc/fstab
+        line: '{{ swapfile_path }} swap swap 0 0'
+        state: present
+
+  when: not swapfile.stat.exists

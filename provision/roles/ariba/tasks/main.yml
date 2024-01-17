@@ -1,0 +1,39 @@
+---
+
+###
+# sudo yum install epel-release
+# yum clean all --enablerepo=*
+# sudo yum update --disablerepo=epel
+# sudo yum update ca-certificates
+# sudo yum install python-pip
+# sudo pip install urllib3 pyOpenSSL ndg-httpsclient pyasn1
+###
+
+# tasks file for ariba
+- name: Setup Apache for Ariba
+  include_tasks: apache.yml
+
+- block:
+  - name: Register JRebel
+    stat:
+      path: files/jrebel/jrebel.jar
+    register: register_jrebel
+
+  - name: Include JRebel if provided.
+    include_tasks: jrebel.yml
+    vars:
+      params:
+        files:
+          - files/jrebel/jrebel.jar
+    when: register_jrebel.stat.exists
+
+  - name: Install Tomcat
+    include_tasks: tomcat.yml
+
+  - name: Install Ariba
+    include_tasks: ariba.yml
+
+  become:
+    yes
+  become_user:
+    "{{ ariba_user }}"

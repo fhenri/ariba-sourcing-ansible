@@ -1,0 +1,86 @@
+---
+- name: Ensure group exists
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ dba_group }}"
+    - oinstall
+
+- name: Create oracle user
+  user:
+    name:   "{{ oracle_user }}"
+    groups: "{{ dba_group }}, oinstall"
+    state:  present
+    home:   "{{ oracle_root }}"
+    password: "{{ oracle_password | password_hash('sha512')}}"
+    shell:  '/bin/bash'
+    createhome: True
+    append: True
+
+- name: Copy sysctl.conf file
+  template:
+    src: templates/etc-sysctl.conf.j2
+    dest: /etc/sysctl.conf
+    mode: 0644
+    owner: root
+
+- name: Copy security/limits.conf file
+  template:
+    src: templates/etc-security-limits.conf.j2
+    dest: /etc/security/limits.conf
+    mode: 0644
+    owner: root
+
+- name: Copy profile file
+  template:
+    src: templates/ora.sh.j2
+    dest: /etc/profile.d/ora.sh
+    mode: 0777
+    owner: root
+
+- name: Copy service script
+  template:
+    src: templates/oracle-rdbms.service.j2
+    dest: /etc/systemd/system/oracle-rdbms.service
+    mode: 0777
+    owner: root
+
+- name: Unsure directory exists
+  file: 
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ dba_group }}"
+    mode: 0755
+  with_items:
+    - "{{ oracle_root }}"
+    - "{{ oracle_root }}/tmp"
+
+- name: Copy Oracle installation silent file
+  template:
+    src: templates/db_install_my.rsp.j2
+    dest: "{{ oracle_root }}/tmp/db_install_my.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ dba_group }}"
+
+- name: Copy Oracle db create silent file
+  template:
+    src: templates/dbca.rsp.j2
+    dest: "{{ oracle_root }}/tmp/dbca.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ dba_group }}"
+
+- name: check if installation folder exists
+  stat:
+    path: "{{ oracle_root }}/tmp/database"
+  register: installation_file
+
+- name: Copy Oracle installers file
+  copy: 
+    src: "files/"
+    dest: "{{ oracle_root }}/tmp/"
+    mode: preserve
+    owner: "{{ oracle_user }}"
+    group: "{{ dba_group }}"
+  when: not (installation_file.stat.exists)

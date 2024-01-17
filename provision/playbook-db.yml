@@ -1,0 +1,8 @@
+---
+- name: Test oracle-db 12 from static
+  hosts: db
+  vars_files:
+    - config/common.yml
+
+  roles:
+    - role: oracledb

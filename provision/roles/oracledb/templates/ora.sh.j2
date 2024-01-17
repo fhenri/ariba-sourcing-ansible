@@ -1,0 +1,11 @@
+export ORACLE_HOME={{ oracle_home }}
+export ORACLE_BASE={{ oracle_base }}
+export ORACLE_SID={{ oracle_sid }}
+
+export ORACLE_HOSTNAME={{ oracle_hostname }}
+export ORACLE_UNQNAME={{ oracle_hostname }}
+
+export PATH=$PATH:$ORACLE_HOME/bin
+
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib;
+export CLASSPATH=$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib;

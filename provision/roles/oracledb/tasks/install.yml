@@ -1,0 +1,62 @@
+---
+- name: run sysctl
+  command: 
+    chdir: /usr/sbin
+    cmd: /usr/sbin/sysctl -p
+  become: True
+
+#https://unix.stackexchange.com/questions/181782/restarting-init-without-restarting-the-system
+- name: reload-init
+  command: 
+    chdir: /usr/sbin
+    cmd: telinit u
+  become: True
+
+- name: configure SELINUX
+  replace:
+    path: /etc/selinux/config
+    regexp: 'SELINUX=permissive$'
+    replace: 'SELINUX=disabled'
+  become: True
+
+- name: install oracle
+  command:
+    cmd: "/bin/sh -c '{{ oracle_root }}/tmp/database/runInstaller -silent -waitforcompletion -ignorePrereq -responseFile {{ oracle_root }}/tmp/db_install_my.rsp'"
+    chdir: "{{ oracle_root }}/tmp/database"
+    creates: "{{ oracle_base }}"
+  become: yes
+  become_user: "{{ oracle_user }}"
+
+- name: post-install
+  command:
+    cmd: "{{ item }}"
+  with_items:
+    - "{{ inventory_location }}/orainstRoot.sh"
+    - "{{ oracle_home }}/root.sh"
+  become: True
+
+- name: start db and configure autostart
+  command:
+    chdir: '/usr/bin'
+    cmd: "{{ item }}"
+  with_items:
+    - 'systemctl start oracle-rdbms'
+    - 'systemctl daemon-reexec'
+    - 'systemctl enable oracle-rdbms'
+  become: True
+
+- name: create-db
+  command:
+    chdir: "{{ oracle_home }}/bin"
+    cmd: "/bin/sh -c 'source /etc/profile.d/ora.sh && {{ oracle_home }}/bin/dbca -silent -createDatabase -responseFile {{ oracle_root }}/tmp/dbca.rsp'"
+    creates: "{{ data_location }}"
+  become: yes
+  become_user: "{{ oracle_user }}"
+
+- name: configure database to autostart
+  replace:
+    path: /etc/oratab
+    regexp: ':N$'
+    replace: ':Y'
+  become: True
+

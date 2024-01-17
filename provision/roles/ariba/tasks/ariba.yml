@@ -1,0 +1,87 @@
+---
+# pre-requisites packages for ariba
+
+- name: Install needed libraries for Ariba installation
+  yum: 
+    name: [
+      'perl', 
+      'libXext.i686', 
+      'glibc.i686', 
+      'dejavu*', 
+      'unixODBC', 
+      'Xvfb', 
+      'lsof', 
+      'unzip', 
+      'zip', 
+      'mutt', 
+      'ant', 
+      'ant-junit',
+      'git'
+    ]
+    state: installed
+  become: yes
+  become_user: root
+
+- name: Ensure .Xauthority exists
+  copy:
+    content: ""
+    dest: "{{ ariba_root }}/.Xauthority"
+    force: no
+
+- name: Copy installation source files to target directory
+  copy: 
+    src: "files/"
+    dest: "{{ ariba_inst }}"
+    mode: preserve
+
+- name: Unsure {{ ariba_conf }} directory is created
+  file: 
+    path: "{{ ariba_conf }}"
+    state: directory
+    mode: '0755'
+
+- name: Create upstream installer properties file
+  template: 
+    src: templates/upstream-installer.properties.j2
+    dest: "{{ ariba_conf}}/upstream-installer.properties"
+
+- name: Create service pack upstream installer properties file
+  template: 
+    src: templates/sp-upstream-installer.properties.j2
+    dest: "{{ ariba_conf}}/sp-upstream-installer.properties"
+
+- name: Copy Ariba shared directory
+  synchronize: 
+    src: "{{ aes_inst_upstream}}/shared/"
+    dest: "{{ ariba_root}}/shared"
+
+- name: Create AppInfo.xl
+  template: 
+    src: templates/AppInfo.xml.j2
+    dest: "{{ ariba_root}}/shared/config/asmshared/AppInfo.xml"
+
+- name: Create Parameters.table merge
+  template: 
+    src: templates/Parameters.table.merge.j2
+    dest: "{{ ariba_conf}}/Parameters.table.merge"
+
+- name: Copy script.table file
+  copy:
+    src: templates/script.table
+    dest: "{{ ariba_conf }}/script.table"
+
+- name: Install Ariba
+  command: 
+    chdir: "{{ ariba_inst }}"
+    cmd: "sh {{ ariba_inst }}/install-ariba.sh aes. {{ ariba_version }} {{ ariba_sp }} {{ tomcat_version }}"
+    creates: "{{ ariba_base }}"
+
+- name: Copy script.table file
+  copy:
+    src: templates/script.table
+    dest: "{{ ariba_conf }}/script.table"
+
+- name: Copy js file
+  copy:
+    src: files/tomcat/javascript-1.7.2.jar
+    dest: "{{ ariba_server }}/classes/js.jar"

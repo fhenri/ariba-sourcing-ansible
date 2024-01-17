@@ -1,0 +1,20 @@
+---
+# vars file for oracledb
+
+oracle_hostname: "{{ db_hostname }}"
+
+oracle_sid: 'aribadb'
+oracle_user: 'oracle'
+dba_group: 'dba'
+#oracle_password: '$1$0yXEC7u6$eLTh8zwo7qw3ZEEyPoS/B/'
+oracle_password: 'oracle'
+oracle_root: '/oradb'
+oracle_base: "{{ oracle_root }}/app/{{ oracle_user }}"
+oracle_home: "{{ oracle_base }}/product/12.2.0/dbhome_1"
+
+data_location: "{{ oracle_base }}/oradata"
+inventory_location: "{{ oracle_root }}/app/oraInventory"
+
+swapfile_path: '/swpafile'
+swapfile_bs_size_mb: 3
+swapfile_count: 1024

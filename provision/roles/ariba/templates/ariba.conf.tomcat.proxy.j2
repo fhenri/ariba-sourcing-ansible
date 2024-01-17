@@ -1,0 +1,49 @@
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_ajp_module modules/mod_proxy_ajp.so
+LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so
+LoadModule slotmem_shm_module modules/mod_slotmem_shm.so
+
+<Location "/balancer-manager">
+   SetHandler balancer-manager
+   Order deny,allow
+   Deny from all
+   Allow from all
+</Location>
+ProxyPass /balancer-manager !
+
+<Location /server-status>
+   SetHandler server-status
+   Order Deny,Allow
+   Deny from all
+   Allow from all
+</Location> 
+ProxyPass /server-status !
+
+<Proxy balancer://SourcingCluster>
+{% for server in tomcat_servers %}
+  BalancerMember ajp://{{ ariba_host }}:{{ server.port }} loadfactor=1 route={{ server.node }} lbset=0
+{% endfor %}
+</Proxy>
+
+<Location /Sourcing>
+   Allow From All
+   ProxyPass balancer://SourcingCluster/Sourcing stickysession=JSESSIONID|jsessionid lbmethod=byrequests 
+</Location>
+
+# ASM Aliases
+
+<Location /AribaASM>
+  ExpiresActive On
+  ExpiresDefault "now plus 12 hours"
+</Location>
+
+Alias /AribaASM/ {{ ariba_base }}/WebComponents/
+
+<Directory {{ ariba_base }}/WebComponents/>
+  Options All Indexes
+  Order allow,deny
+  Allow from all
+</Directory>
+

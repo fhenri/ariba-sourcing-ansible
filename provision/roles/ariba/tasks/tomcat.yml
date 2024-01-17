@@ -1,0 +1,27 @@
+---
+# tomcat installation for Ariba servers
+
+- name: Create tomcat root
+  file:
+    path: "{{ tomcat_root }}"
+    state: directory
+    mode: '0755'
+
+- name: create tomcat server directory if they don't exist
+  file:
+    path: "{{tomcat_root}}/{{ item.node }}"
+    state: directory
+    mode: 0775
+  with_items:
+    - "{{ tomcat_servers }}"
+  register: tomcat_nodes
+
+- name: unzip tomcat archive to directory
+  unarchive:
+    src: "{{ tomcat_source_folder }}/{{ tomcat_source_file }}"
+    dest: "{{ item.path }}"
+    extra_opts:
+      - --strip-components=1
+  with_items:
+    - "{{ tomcat_nodes.results }}"
+  when: tomcat_nodes.results
